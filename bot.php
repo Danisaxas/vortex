@@ -61,6 +61,8 @@ if (isset($update['message'])) {
     if (in_array($firstChar, $allowedPrefixes)) {
         // Quita el prefijo y espacios, toma solo el comando, ignora argumentos
         $cmd = explode(' ', substr($text, 1))[0];
+        // Si escriben /comando@BotName en grupos, quita el @BotName
+        $cmd = explode('@', $cmd)[0];
         $cmd = str_replace('_', '', $cmd); // Ej: user_id busca "userid"
         $cmdFile = findCommandFile($cmd, $config['commands_path']);
 
