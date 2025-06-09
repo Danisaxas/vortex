@@ -17,5 +17,7 @@ return function($chatId, $message, $config) {
         'inline_keyboard' => require __DIR__ . '/../../texts/button/es.php'
     ];
 
-    sendMessage($chatId, $text, $config, 'HTML', $keyboard);
+    // Responde al mensaje original
+    $replyTo = $message['message_id'];
+    sendMessage($chatId, $text, $config, 'HTML', $keyboard, $replyTo);
 };

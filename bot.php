@@ -78,7 +78,7 @@ if (isset($update['message'])) {
     }
 }
 
-function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null) {
+function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null, $replyTo = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
     $data = [
@@ -90,6 +90,9 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     }
     if ($replyMarkup) {
         $data['reply_markup'] = json_encode($replyMarkup);
+    }
+    if ($replyTo) {
+        $data['reply_to_message_id'] = $replyTo;
     }
     file_get_contents($url . "?" . http_build_query($data));
 }
