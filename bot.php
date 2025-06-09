@@ -5,7 +5,7 @@ $config = require __DIR__ . '/config/config.php';
 function botLog($message) {
     $dt = new DateTime("now", new DateTimeZone("Europe/Madrid"));
     $logLine = "[" . $dt->format("Y-m-d H:i:s") . "] $message";
-    error_log($logLine); // Railway logs show this!
+    error_log($logLine);
 }
 
 // Log de inicio
@@ -51,6 +51,7 @@ $allowedPrefixes = ['.', '/', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', 
 $input = file_get_contents('php://input');
 $update = json_decode($input, true);
 
+// MANEJO DE MENSAJES NORMALES
 if (isset($update['message'])) {
     $message = $update['message'];
     $chatId = $message['chat']['id'];
@@ -78,6 +79,27 @@ if (isset($update['message'])) {
     }
 }
 
+// MANEJO DE CALLBACK QUERY (BOTONES INLINE)
+if (isset($update['callback_query'])) {
+    $cbQuery = $update['callback_query'];
+    $chatId = $cbQuery['message']['chat']['id'];
+    $data = $cbQuery['data'];
+
+    // Busca el handler en commands/handler/
+    $handlerFile = $config['commands_path'] . "handler/$data.php";
+    if (file_exists($handlerFile)) {
+        $username = $cbQuery['from']['username'] ?? 'sin_usuario';
+        $userId = $cbQuery['from']['id'];
+        botLog("Callback: $data | Usuario: @$username | ID: $userId");
+        $handler = require $handlerFile;
+        if (is_callable($handler)) {
+            $handler($chatId, $cbQuery['message'], $config, $cbQuery);
+        }
+    }
+    // Si no existe handler, no hace nada.
+}
+
+// Función para enviar mensajes
 function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null, $replyTo = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
@@ -94,6 +116,34 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     if ($replyTo) {
         $data['reply_to_message_id'] = $replyTo;
     }
+    file_get_contents($url . "?" . http_build_query($data));
+}
+
+// Función para editar mensajes con inline keyboard
+function editMessage($chatId, $messageId, $text, $config, $parseMode = null, $replyMarkup = null) {
+    $token = $config['token'];
+    $url = "https://api.telegram.org/bot$token/editMessageText";
+    $data = [
+        "chat_id" => $chatId,
+        "message_id" => $messageId,
+        "text" => $text
+    ];
+    if ($parseMode) {
+        $data['parse_mode'] = $parseMode;
+    }
+    if ($replyMarkup) {
+        $data['reply_markup'] = json_encode($replyMarkup);
+    }
+    file_get_contents($url . "?" . http_build_query($data));
+}
+
+// Función para responder al callback de los botones inline
+function answerCallback($callbackId) {
+    $token = $GLOBALS['config']['token'];
+    $url = "https://api.telegram.org/bot$token/answerCallbackQuery";
+    $data = [
+        "callback_query_id" => $callbackId
+    ];
     file_get_contents($url . "?" . http_build_query($data));
 }
 ?>
