@@ -1,7 +1,35 @@
 <?php
 $config = require __DIR__ . '/config/config.php';
 
-// Busca recursivamente el archivo de comando en cualquier subcarpeta
+// Log a la terminal/railway
+function botLog($message) {
+    $dt = new DateTime("now", new DateTimeZone("Europe/Madrid"));
+    $logLine = "[" . $dt->format("Y-m-d H:i:s") . "] $message";
+    error_log($logLine); // Railway logs show this!
+}
+
+// Log de inicio
+botLog("Bot iniciado");
+
+// Contar y loggear comandos cargados
+function countCommands($dir) {
+    $count = 0;
+    $files = scandir($dir);
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $fullPath = $dir . DIRECTORY_SEPARATOR . $file;
+        if (is_dir($fullPath)) {
+            $count += countCommands($fullPath);
+        } else {
+            $count++;
+        }
+    }
+    return $count;
+}
+$comandosCargados = countCommands($config['commands_path']);
+botLog("Comandos cargados: $comandosCargados");
+
+// Función para buscar el archivo de comando recursivamente
 function findCommandFile($command, $dir) {
     $files = scandir($dir);
     foreach ($files as $file) {
@@ -33,16 +61,20 @@ if (isset($update['message'])) {
     if (in_array($firstChar, $allowedPrefixes)) {
         // Quita el prefijo y espacios, toma solo el comando, ignora argumentos
         $cmd = explode(' ', substr($text, 1))[0];
-        $cmd = str_replace('_', '', $cmd); // /user_id busca "userid"
+        $cmd = str_replace('_', '', $cmd); // Ej: user_id busca "userid"
         $cmdFile = findCommandFile($cmd, $config['commands_path']);
 
         if ($cmdFile && file_exists($cmdFile)) {
+            $username = $message['from']['username'] ?? 'sin_usuario';
+            $userId = $message['from']['id'];
+            botLog("Comando recibido: $text | Usuario: @$username | ID: $userId");
+
             $handler = require $cmdFile;
             if (is_callable($handler)) {
                 $handler($chatId, $message, $config);
             }
         }
-        // Si no existe, no responde nada
+        // Si el comando no existe, no responde nada (silencioso)
     }
 }
 
