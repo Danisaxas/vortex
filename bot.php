@@ -78,8 +78,7 @@ if (isset($update['message'])) {
     }
 }
 
-// Envía mensaje a Telegram con parse_mode opcional
-function sendMessage($chatId, $text, $config, $parseMode = null) {
+function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
     $data = [
@@ -88,6 +87,9 @@ function sendMessage($chatId, $text, $config, $parseMode = null) {
     ];
     if ($parseMode) {
         $data['parse_mode'] = $parseMode;
+    }
+    if ($replyMarkup) {
+        $data['reply_markup'] = json_encode($replyMarkup);
     }
     file_get_contents($url . "?" . http_build_query($data));
 }
