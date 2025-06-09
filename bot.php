@@ -79,26 +79,6 @@ if (isset($update['message'])) {
     }
 }
 
-// MANEJO DE CALLBACK QUERY (BOTONES INLINE)
-if (isset($update['callback_query'])) {
-    $cbQuery = $update['callback_query'];
-    $chatId = $cbQuery['message']['chat']['id'];
-    $data = $cbQuery['data'];
-
-    // Busca el handler en la carpeta raíz /handlers/
-    $handlerFile = __DIR__ . "/handlers/$data.php";
-    if (file_exists($handlerFile)) {
-        $username = $cbQuery['from']['username'] ?? 'sin_usuario';
-        $userId = $cbQuery['from']['id'];
-        botLog("Callback: $data | Usuario: @$username | ID: $userId");
-        $handler = require $handlerFile;
-        if (is_callable($handler)) {
-            $handler($chatId, $cbQuery['message'], $config, $cbQuery);
-        }
-    }
-    // Si no existe handler, no hace nada.
-}
-
 // Función para enviar mensajes
 function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null, $replyTo = null) {
     $token = $config['token'];
@@ -118,32 +98,3 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     }
     file_get_contents($url . "?" . http_build_query($data));
 }
-
-// Función para editar mensajes con inline keyboard
-function editMessage($chatId, $messageId, $text, $config, $parseMode = null, $replyMarkup = null) {
-    $token = $config['token'];
-    $url = "https://api.telegram.org/bot$token/editMessageText";
-    $data = [
-        "chat_id" => $chatId,
-        "message_id" => $messageId,
-        "text" => $text
-    ];
-    if ($parseMode) {
-        $data['parse_mode'] = $parseMode;
-    }
-    if ($replyMarkup) {
-        $data['reply_markup'] = json_encode($replyMarkup);
-    }
-    file_get_contents($url . "?" . http_build_query($data));
-}
-
-// Función para responder al callback de los botones inline
-function answerCallback($callbackId) {
-    $token = $GLOBALS['config']['token'];
-    $url = "https://api.telegram.org/bot$token/answerCallbackQuery";
-    $data = [
-        "callback_query_id" => $callbackId
-    ];
-    file_get_contents($url . "?" . http_build_query($data));
-}
-?>
