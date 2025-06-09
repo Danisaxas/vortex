@@ -5,13 +5,13 @@ $config = require __DIR__ . '/config/config.php';
 function botLog($message) {
     $dt = new DateTime("now", new DateTimeZone("Europe/Madrid"));
     $logLine = "[" . $dt->format("Y-m-d H:i:s") . "] $message";
-    error_log($logLine);
+    error_log($logLine); // Railway logs show this!
 }
 
 // Log de inicio
 botLog("Bot iniciado");
 
-// Contar y loggear comandos cargados (solo para comandos)
+// Contar y loggear comandos cargados
 function countCommands($dir) {
     $count = 0;
     $files = scandir($dir);
@@ -29,7 +29,7 @@ function countCommands($dir) {
 $comandosCargados = countCommands($config['commands_path']);
 botLog("Comandos cargados: $comandosCargados");
 
-// Función para buscar el archivo de comando recursivamente (solo para /commands/)
+// Función para buscar el archivo de comando recursivamente
 function findCommandFile($command, $dir) {
     $files = scandir($dir);
     foreach ($files as $file) {
@@ -51,7 +51,6 @@ $allowedPrefixes = ['.', '/', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', 
 $input = file_get_contents('php://input');
 $update = json_decode($input, true);
 
-// MANEJO DE MENSAJES NORMALES (comandos tipo /start, .id, etc)
 if (isset($update['message'])) {
     $message = $update['message'];
     $chatId = $message['chat']['id'];
@@ -79,8 +78,7 @@ if (isset($update['message'])) {
     }
 }
 
-// Función para enviar mensajes
-function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null, $replyTo = null) {
+function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
     $data = [
@@ -93,8 +91,6 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     if ($replyMarkup) {
         $data['reply_markup'] = json_encode($replyMarkup);
     }
-    if ($replyTo) {
-        $data['reply_to_message_id'] = $replyTo;
-    }
     file_get_contents($url . "?" . http_build_query($data));
 }
+?>
