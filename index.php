@@ -1,2 +1,2 @@
 <?php
-echo "¡Bot online! 😎";
+echo "¡Bot online! x😎";
