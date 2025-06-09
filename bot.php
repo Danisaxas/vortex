@@ -17,7 +17,7 @@ function findCommandFile($command, $dir) {
     return null;
 }
 
-// Todos los prefijos aceptados
+// Prefijos permitidos para comandos
 $allowedPrefixes = ['.', '/', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '{', '}', '"', "'", '<', '>', '?', '\\'];
 
 $input = file_get_contents('php://input');
@@ -28,12 +28,12 @@ if (isset($update['message'])) {
     $chatId = $message['chat']['id'];
     $text = trim($message['text'] ?? '');
 
-    // ¿El mensaje inicia con un prefijo permitido?
+    // Revisa si inicia con algún prefijo permitido
     $firstChar = mb_substr($text, 0, 1);
     if (in_array($firstChar, $allowedPrefixes)) {
-        // Extrae el comando sin prefijo ni argumentos
+        // Quita el prefijo y espacios, toma solo el comando, ignora argumentos
         $cmd = explode(' ', substr($text, 1))[0];
-        $cmd = str_replace('_', '', $cmd); // Opcional: normaliza comandos con _
+        $cmd = str_replace('_', '', $cmd); // /user_id busca "userid"
         $cmdFile = findCommandFile($cmd, $config['commands_path']);
 
         if ($cmdFile && file_exists($cmdFile)) {
@@ -42,7 +42,7 @@ if (isset($update['message'])) {
                 $handler($chatId, $message, $config);
             }
         }
-        // Si no hay comando, no responde nada (silencioso)
+        // Si no existe, no responde nada
     }
 }
 
