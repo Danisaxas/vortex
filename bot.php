@@ -1,6 +1,7 @@
 <?php
 $config = require __DIR__ . '/config/config.php';
 
+// Busca recursivamente el archivo de comando en cualquier subcarpeta
 function findCommandFile($command, $dir) {
     $files = scandir($dir);
     foreach ($files as $file) {
@@ -16,6 +17,7 @@ function findCommandFile($command, $dir) {
     return null;
 }
 
+// Todos los prefijos aceptados
 $allowedPrefixes = ['.', '/', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '{', '}', '"', "'", '<', '>', '?', '\\'];
 
 $input = file_get_contents('php://input');
@@ -26,12 +28,12 @@ if (isset($update['message'])) {
     $chatId = $message['chat']['id'];
     $text = trim($message['text'] ?? '');
 
-    // Revisa si inicia con algún prefijo permitido
+    // ¿El mensaje inicia con un prefijo permitido?
     $firstChar = mb_substr($text, 0, 1);
     if (in_array($firstChar, $allowedPrefixes)) {
-        // Quita el prefijo y espacios, toma solo el comando, ignora argumentos
+        // Extrae el comando sin prefijo ni argumentos
         $cmd = explode(' ', substr($text, 1))[0];
-        $cmd = str_replace('_', '', $cmd); // ejemplo: user_id -> userid
+        $cmd = str_replace('_', '', $cmd); // Opcional: normaliza comandos con _
         $cmdFile = findCommandFile($cmd, $config['commands_path']);
 
         if ($cmdFile && file_exists($cmdFile)) {
@@ -40,10 +42,11 @@ if (isset($update['message'])) {
                 $handler($chatId, $message, $config);
             }
         }
-        // Si no existe, no responde nada
+        // Si no hay comando, no responde nada (silencioso)
     }
 }
 
+// Envía mensaje a Telegram con parse_mode opcional
 function sendMessage($chatId, $text, $config, $parseMode = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
