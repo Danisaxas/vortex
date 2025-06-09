@@ -96,29 +96,4 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     }
     file_get_contents($url . "?" . http_build_query($data));
 }
-function editMessage($chatId, $messageId, $text, $config, $parseMode = null, $replyMarkup = null) {
-    $token = $config['token'];
-    $url = "https://api.telegram.org/bot$token/editMessageText";
-    $data = [
-        "chat_id" => $chatId,
-        "message_id" => $messageId,
-        "text" => $text
-    ];
-    if ($parseMode) {
-        $data['parse_mode'] = $parseMode;
-    }
-    if ($replyMarkup) {
-        $data['reply_markup'] = json_encode($replyMarkup);
-    }
-    file_get_contents($url . "?" . http_build_query($data));
-}
-
-function answerCallback($callbackId) {
-    $token = $GLOBALS['config']['token'];
-    $url = "https://api.telegram.org/bot$token/answerCallbackQuery";
-    $data = [
-        "callback_query_id" => $callbackId
-    ];
-    file_get_contents($url . "?" . http_build_query($data));
-}
-
+?>
