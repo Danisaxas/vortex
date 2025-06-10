@@ -1,5 +1,5 @@
 <?php
-return function($chatId, $message, $config) {
+return function($chatId, $message, $config, $cbQuery = null) {
     // Fecha y hora en Madrid
     $dt = new DateTime("now", new DateTimeZone("Europe/Madrid"));
     $dateEs = $dt->format("Y-m-d h:i:s A");
@@ -14,10 +14,21 @@ return function($chatId, $message, $config) {
 
     // Carga botones
     $keyboard = [
-        'inline_keyboard' => require __DIR__ . '/../../texts/button/es.php'
+        'inline_keyboard' => $config['buttons']['start_menu']
     ];
 
-    // Responde al mensaje original
-    $replyTo = $message['message_id'];
-    sendMessage($chatId, $text, $config, 'HTML', $keyboard, $replyTo);
+    if ($cbQuery) {
+        answerCallback($cbQuery['id']);
+        editMessage(
+            $chatId,
+            $cbQuery['message']['message_id'],
+            $text,
+            $config,
+            'HTML',
+            $keyboard
+        );
+    } else {
+        $replyTo = $message['message_id'] ?? null;
+        sendMessage($chatId, $text, $config, 'HTML', $keyboard, $replyTo);
+    }
 };

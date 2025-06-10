@@ -80,6 +80,21 @@ if (isset($update['message'])) {
     }
 }
 
+if (isset($update['callback_query'])) {
+    $cbQuery = $update['callback_query'];
+    $data = $cbQuery['data'];
+    $chatId = $cbQuery['message']['chat']['id'];
+
+    $cbFile = findCommandFile($data, $config['commands_path']);
+    if ($cbFile && file_exists($cbFile)) {
+        botLog("Callback recibido: $data");
+        $handler = require $cbFile;
+        if (is_callable($handler)) {
+            $handler($chatId, null, $config, $cbQuery);
+        }
+    }
+}
+
 function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = null, $replyTo = null) {
     $token = $config['token'];
     $url = "https://api.telegram.org/bot$token/sendMessage";
@@ -96,6 +111,29 @@ function sendMessage($chatId, $text, $config, $parseMode = null, $replyMarkup = 
     if ($replyTo) {
         $data['reply_to_message_id'] = $replyTo;
     }
+    file_get_contents($url . "?" . http_build_query($data));
+}
+
+function answerCallback($callbackId, $text = null, $showAlert = false) {
+    global $config;
+    $token = $config['token'];
+    $url = "https://api.telegram.org/bot$token/answerCallbackQuery";
+    $data = ['callback_query_id' => $callbackId];
+    if ($text !== null) $data['text'] = $text;
+    if ($showAlert) $data['show_alert'] = true;
+    file_get_contents($url . "?" . http_build_query($data));
+}
+
+function editMessage($chatId, $messageId, $text, $config, $parseMode = null, $replyMarkup = null) {
+    $token = $config['token'];
+    $url = "https://api.telegram.org/bot$token/editMessageText";
+    $data = [
+        'chat_id' => $chatId,
+        'message_id' => $messageId,
+        'text' => $text
+    ];
+    if ($parseMode) $data['parse_mode'] = $parseMode;
+    if ($replyMarkup) $data['reply_markup'] = json_encode($replyMarkup);
     file_get_contents($url . "?" . http_build_query($data));
 }
 ?>
