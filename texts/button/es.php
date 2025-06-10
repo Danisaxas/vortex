@@ -12,18 +12,18 @@ return [
         ['text' => 'Cerrar',        'callback_data' => 'cerrar'],
         ['text' => 'xCommerce [☁️]', 'callback_data' => 'xcommerce'],
     ],
-    // Fila 3
+
     [
-        ['text' => 'Auth',           'callback_data' => 'auth'],
-        ['text' => 'Charge',         'callback_data' => 'charge'],
-        ['text' => 'CCN Gates',      'callback_data' => 'ccngates'],
-    ],
-    // Fila 4
-    [
-        ['text' => 'Mass Checking',  'callback_data' => 'masschecking'],
-    ],
-    // Fila 5
-    [
-        ['text' => 'Back',           'callback_data' => 'back_start'],
-    ],
-];
+        [
+            ['text' => 'Auth',           'callback_data' => 'auth'],
+            ['text' => 'Charge',         'callback_data' => 'charge'],
+            ['text' => 'CCN Gates',      'callback_data' => 'ccngates'],
+        ],
+        [
+            ['text' => 'Mass Checking',  'callback_data' => 'masschecking'],
+        ],
+        [
+            ['text' => 'Back',           'callback_data' => 'back_start'],
+        ],
+        ]
+    ];
